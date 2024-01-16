@@ -49,6 +49,66 @@ string decode (string code, Node * root) {
     return text;
 }
 
+void compress(string code) {
+    fstream arquivo("output.txt", ios::out);
+    unsigned char byte = 0;
+
+    string content;
+
+    int j = 7; 
+    
+    for(auto & bit: code) {
+        unsigned char mascara = 1;
+        
+        if (bit == '1') {
+            mascara = mascara << j;
+            byte = byte | mascara;
+        }
+
+        j--;
+
+        if (j < 0) {
+            content += byte;
+            byte = 0;
+            j = 7;
+        }
+
+    }
+
+    if (j != 7) content += byte;
+    
+    arquivo << content;
+
+    arquivo.close();
+}
+
+unsigned int bit_is_set(unsigned char byte, int i) {
+  unsigned char mascara = (1 << i);
+  return byte & mascara;
+}
+
+string decompress(Node * root) {
+
+    ifstream file("output.txt"); // abre o arquivo em modo leitura
+
+    string text; 
+    Node * aux = root;
+
+    char byte;
+    while (file.get(byte)) {
+        for(int i = 7; i >=0; i--){
+            if(bit_is_set(byte, i)) aux = aux->right;
+            else                    aux = aux->left;
+            if(!aux->left and !aux->right){
+                text+= aux->caracter;
+                aux = root;
+            };
+        }
+    }
+    file.close();
+
+    return text;
+}
 
 int main(void) {
  
@@ -83,7 +143,14 @@ int main(void) {
 
     // TODO: Compactacao e Descompactacao
 
-    cout << decode(encode(text,dictionary),tree) << endl; 
+    //cout << decode(encode(text,dictionary),tree) << endl; 
+    string code = encode(text, dictionary);
+
+
+    compress(code);
+
+    cout << "Conteudo descompactado" << endl;
+    cout << decompress(tree) << endl; 
 
     delete tree; 
 }
