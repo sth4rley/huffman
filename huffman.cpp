@@ -97,6 +97,7 @@ unsigned int bit_is_set(unsigned char byte, int i) {
     return byte & mask;
 }
 
+// TODO: ifstream -> stdio? 
 string decompress(Node * root) {
 
     ifstream file(file_name+".huff"); // abre o arquivo em modo leitura
@@ -124,24 +125,27 @@ int main(int argc, char ** argv) {
  
     if(argc >= 2) file_name = argv[1];
 
-    ifstream file(file_name); // abre o arquivo em modo leitura
+     // Abrindo o arquivo para leitura
+    FILE *arquivo;
+    arquivo = fopen(file_name.c_str(), "r");
 
-    if(!file) {
-        cout << "Erro ao abrir o arquivo: " << file_name << endl;
-        exit(1);
+    // Verificando se o arquivo foi aberto corretamente
+    if (arquivo == NULL) {
+        printf("Erro ao abrir o arquivo.\n");
+        return 1;
     }
-                                
-    vector<int> frequency_table(257,0);
-    
+
     string text;
+    vector<int> frequency_table(257,0);
 
-    char c; 
-    while (file.get(c)) {
-        text +=c ;
-        frequency_table[c]++;
+    int chr;
+    while ((chr = fgetc(arquivo)) != EOF) {
+        text += chr;
+        frequency_table[(int)chr]++; 
     }
 
-    file.close();
+    fclose(arquivo);
+
 
     // fila de prioridade
     priority_queue<Node> pq;
@@ -162,8 +166,8 @@ int main(int argc, char ** argv) {
 
     compress(code);
 
-    cout << "Conteudo descompactado" << endl;
-    cout << decompress(tree) << endl; 
+    //cout << "Conteudo descompactado" << endl;
+    //cout << decompress(tree) << endl; 
 
     delete tree; 
 }
